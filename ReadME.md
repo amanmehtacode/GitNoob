@@ -1,5 +1,3 @@
-Here is the updated `README.md` for the `GitNoob` project:
-
 # GitNoob
 **GitNoob** is a Python library designed to simplify common Git commands for new developers. It provides easy-to-use command-line tools to streamline Git workflows and help you manage your version control more efficiently.
 
