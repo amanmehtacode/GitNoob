@@ -7,7 +7,7 @@ Here is the updated `README.md` for the `GitNoob` project:
 Since GitNoob is currently not available on PyPI, you can install it directly from the GitHub repository. Clone the repository and install it locally:
 
 ```bash
-git clone https://github.com/yourusername/GitNoob.git
+git clone https://github.com/amanmehtacode/GitNoob.git
 cd GitNoob
 pip install .
 ```
@@ -52,7 +52,7 @@ lazypush [options]
    Combines pulling the latest changes with verbose mode for an in-depth look at the operations.
 
 ## Under Development
-GitNoob is a work in progress. The `lazypush` command is just the beginning. Future updates will include more commands and features designed to make Git management easier and more intuitive. Keep an eye on the [GitHub repository](https://github.com/yourusername/GitNoob) for new releases and updates.
+GitNoob is a work in progress. The `lazypush` command is just the beginning. Future updates will include more commands and features designed to make Git management easier and more intuitive. Keep an eye on the [GitHub repository](https://github.com/amanmehtacode/GitNoob) for new releases and updates.
 
 ## Contributing
 We welcome contributions! If you have ideas for new features or improvements, or if you find a bug, please open an issue or submit a pull request on our [GitHub repository](https://github.com/yourusername/GitNoob).
@@ -63,4 +63,3 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## Contact
 For any questions or feedback, please reach out to:
 - **Author:** Aman Mehta
-- **Email:** amehta20@nyit.edu
