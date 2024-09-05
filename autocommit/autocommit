@@ -1,0 +1,69 @@
+#!/bin/bash
+
+# Function to display verbose messages
+verbose() {
+  if [ "$verbose_mode" = true ]; then
+    echo "$@"
+  fi
+}
+
+# Parse options
+verbose_mode=false
+
+while [[ "$1" =~ ^- ]]; do
+  case $1 in
+    -v | --verbose)
+      verbose_mode=true
+      ;;
+    *)
+      echo "Invalid option: $1"
+      exit 1
+      ;;
+  esac
+  shift
+done
+
+# Check for unstaged changes
+if [ -z "$(git status --porcelain)" ]; then
+  echo "No changes to commit."
+  exit 0
+fi
+
+# Ask for a commit message
+read -p "Enter commit message (leave empty for default): " commit_message
+
+# Default message if none is provided
+if [ -z "$commit_message" ]; then
+  commit_message="Auto commit on $(date)"
+fi
+
+# Add changes to the staging area
+verbose "Staging changes..."
+git add .
+
+# Commit with the provided or default message
+verbose "Committing changes..."
+git commit -m "$commit_message"
+
+# Push the changes to the current branch
+verbose "Pushing changes to the remote branch..."
+git push origin $(git branch --show-current)
+push_status=$?
+
+# If the push fails, try pulling and pushing again
+if [ $push_status -ne 0 ]; then
+  verbose "Initial push failed. Trying to pull the latest changes and push again..."
+  git pull --rebase origin $(git branch --show-current)
+  if [ $? -eq 0 ]; then
+    git push origin $(git branch --show-current)
+    if [ $? -eq 0 ]; then
+      echo "Changes have been committed and pushed successfully after resolving conflicts."
+    else
+      echo "Error: Push failed again. Please resolve manually."
+    fi
+  else
+    echo "Error: Pull (rebase) failed. Please resolve manually."
+  fi
+else
+  echo "Changes have been committed and pushed successfully."
+fi

@@ -1,0 +1,70 @@
+#!/bin/bash
+
+# Function to display verbose messages
+verbose() {
+  if [ "$verbose_mode" = true ]; then
+    echo "$@"
+  fi
+}
+
+# Parse options
+verbose_mode=false
+
+while [[ "$1" =~ ^- ]]; do
+  case $1 in
+    -v | --verbose)
+      verbose_mode=true
+      ;;
+    *)
+      echo "Invalid option: $1"
+      exit 1
+      ;;
+  esac
+  shift
+done
+
+# Check for unstaged changes
+verbose "Checking for unstaged changes..."
+if [[ -n $(git status --porcelain) ]]; then
+    echo "Please commit or stash your changes before creating a new branch."
+    exit 1
+fi
+
+# Prompt the user for branch type and name
+read -p "Enter branch type (e.g., feature, bugfix, hotfix): " branch_type
+read -p "Enter branch name: " branch_name
+
+# Form the full branch name
+new_branch="${branch_type}/${branch_name}"
+
+# Check if the branch already exists
+if git show-ref --verify --quiet refs/heads/"$new_branch"; then
+    echo "Branch '$new_branch' already exists. Aborting."
+    exit 1
+fi
+
+# Create the new branch and switch to it
+verbose "Creating and switching to new branch: $new_branch"
+git checkout -b "$new_branch"
+
+# Check if the branch creation was successful
+if [ $? -eq 0 ]; then
+    echo "Branch '$new_branch' created and checked out successfully."
+else
+    echo "Error: Failed to create the branch. Please check your input."
+    exit 1
+fi
+
+# Ask if the user wants to push the branch to remote
+read -p "Would you like to push the new branch to remote? (y/n): " push_response
+if [[ "$push_response" =~ ^[Yy]$ ]]; then
+    verbose "Pushing branch '$new_branch' to remote..."
+    git push -u origin "$new_branch"
+    if [ $? -eq 0 ]; then
+        echo "Branch '$new_branch' pushed to remote successfully."
+    else
+        echo "Error: Failed to push the branch. Please check your remote settings."
+    fi
+else
+    echo "Branch '$new_branch' created locally but not pushed to remote."
+fi
