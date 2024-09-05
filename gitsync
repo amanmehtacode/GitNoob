@@ -1,0 +1,62 @@
+#!/bin/bash
+
+# Function to display verbose messages
+verbose() {
+  if [ "$verbose_mode" = true ]; then
+    echo "$@"
+  fi
+}
+
+# Parse options
+push_after_pull=false
+verbose_mode=false
+
+while [[ "$1" =~ ^- ]]; do
+  case $1 in
+    -p | --push)
+      push_after_pull=true
+      ;;
+    -v | --verbose)
+      verbose_mode=true
+      ;;
+    *)
+      echo "Invalid option: $1"
+      exit 1
+      ;;
+  esac
+  shift
+done
+
+# Function to sync a single repository
+sync_repo() {
+  local repo_path="$1"
+  cd "$repo_path" || { echo "Failed to enter directory $repo_path"; return; }
+
+  verbose "Syncing repository in $repo_path..."
+
+  # Pull the latest changes
+  verbose "Pulling latest changes..."
+  if ! git pull --rebase; then
+    echo "Error pulling changes in $repo_path. Please resolve manually."
+    cd - > /dev/null || return
+    return
+  fi
+
+  # Optionally push local changes
+  if [ "$push_after_pull" = true ]; then
+    verbose "Pushing local changes..."
+    if ! git push; then
+      echo "Error pushing changes in $repo_path. Please resolve manually."
+    fi
+  fi
+
+  cd - > /dev/null || { echo "Failed to return to previous directory"; return; }
+}
+
+# Identify all Git repositories in the current directory
+find . -type d -name ".git" | while read -r git_dir; do
+  repo_path=$(dirname "$git_dir")
+  sync_repo "$repo_path"
+done
+
+echo "Git sync process complete."

@@ -1,0 +1,75 @@
+#!/bin/bash
+
+# Function to display a message
+message() {
+  echo -e "\033[1;32m$@\033[0m"
+}
+
+# Function to display a warning
+warning() {
+  echo -e "\033[1;31m$@\033[0m"
+}
+
+# Function to display a message with color
+info() {
+  echo -e "\033[1;34m$@\033[0m"
+}
+
+# Get merged branches
+get_merged_branches() {
+  local branch_type="$1"
+  local merged_branches
+  if [ "$branch_type" == "local" ]; then
+    merged_branches=$(git branch --merged | grep -v 'master\|main\|develop' | grep -v '\*')
+  elif [ "$branch_type" == "remote" ]; then
+    merged_branches=$(git branch -r --merged | grep -v 'origin/master\|origin/main\|origin/develop')
+  fi
+  echo "$merged_branches"
+}
+
+# Function to select branches for deletion using fzf
+select_branches() {
+  local branches="$1"
+  local type="$2"
+
+  echo -e "\nSelect $type branches to delete (use arrow keys, Enter to select, and Ctrl+C to cancel):"
+  local selected_branches=$(echo "$branches" | fzf --multi --prompt="Select branches: " --ansi)
+
+  if [ -z "$selected_branches" ]; then
+    echo "No branches selected for deletion."
+    return
+  fi
+
+  for branch in $selected_branches; do
+    branch=$(echo "$branch" | xargs) # Trim whitespace
+    if [[ "$type" == "local" ]]; then
+      if git branch --list "$branch" > /dev/null 2>&1; then
+        git branch -d "$branch"
+        message "Deleted local branch: $branch"
+      else
+        warning "Local branch '$branch' not found."
+      fi
+    elif [[ "$type" == "remote" ]]; then
+      if git branch -r --list "origin/$branch" > /dev/null 2>&1; then
+        git push origin --delete "$branch"
+        message "Deleted remote branch: $branch"
+      else
+        warning "Remote branch 'origin/$branch' not found."
+      fi
+    fi
+  done
+}
+
+# Main script
+info "Fetching branch information..."
+git fetch --all
+
+info "Listing merged local branches..."
+local_branches=$(get_merged_branches "local")
+select_branches "$local_branches" "local"
+
+info "Listing merged remote branches..."
+remote_branches=$(get_merged_branches "remote")
+select_branches "$remote_branches" "remote"
+
+echo "Git cleanup complete."

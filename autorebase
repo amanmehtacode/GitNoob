@@ -1,0 +1,64 @@
+#!/bin/bash
+
+# Function to display messages in color
+print_msg() {
+  local color="$1"
+  shift
+  echo -e "${color}$@\033[0m"
+}
+
+# Function to display verbose messages
+verbose() {
+  if [ "$verbose_mode" = true ]; then
+    print_msg "\033[1;34m" "$@"
+  fi
+}
+
+# Function to display an error message
+error() {
+  print_msg "\033[1;31m" "ERROR: $@"
+}
+
+# Function to display success messages
+success() {
+  print_msg "\033[1;32m" "$@"
+}
+
+# Parse options
+verbose_mode=false
+
+while [[ "$1" =~ ^- ]]; do
+  case $1 in
+    -v | --verbose)
+      verbose_mode=true
+      ;;
+    *)
+      echo "Invalid option: $1"
+      exit 1
+      ;;
+  esac
+  shift
+done
+
+# Fetch the latest changes from the remote repository
+verbose "Fetching latest changes from remote..."
+if ! git fetch origin; then
+  error "Failed to fetch changes from remote. Please check your network connection or repository access."
+  exit 1
+fi
+
+# Attempt to rebase the current branch onto the remote tracking branch
+current_branch=$(git branch --show-current)
+remote_branch="origin/$current_branch"
+
+verbose "Attempting to rebase $current_branch onto $remote_branch..."
+if ! git rebase $remote_branch; then
+  error "Rebase failed. Please resolve conflicts and continue the rebase manually."
+  echo "To resolve conflicts, use the following commands:"
+  echo "  git status  # To check the status of the rebase"
+  echo "  git rebase --continue  # To continue the rebase after resolving conflicts"
+  echo "  git rebase --abort  # To abort the rebase if needed"
+  exit 1
+fi
+
+success "Rebase completed successfully. Your branch is now up-to-date with $remote_branch."

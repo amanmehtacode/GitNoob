@@ -1,0 +1,54 @@
+#!/bin/bash
+
+# Function to display a message
+message() {
+  echo -e "\033[1;32m$@\033[0m"
+}
+
+# Function to display a warning
+warning() {
+  echo -e "\033[1;31m$@\033[0m"
+}
+
+# Function to display information
+info() {
+  echo -e "\033[1;34m$@\033[0m"
+}
+
+# Generate commit log for today
+generate_commit_diary() {
+  local today
+  today=$(date +"%Y-%m-%d")
+
+  info "Generating commit diary for $today..."
+
+  # Retrieve commits from today
+  local commits
+  commits=$(git log --since="$today 00:00" --until="$today 23:59" --pretty=format:"* %h %s" --abbrev-commit)
+
+  if [ -z "$commits" ]; then
+    warning "No commits found for $today."
+    return
+  fi
+
+  # Generate Markdown log
+  local diary_file="commit-diary-${today}.md"
+
+  {
+    echo "# Commit Diary - $today"
+    echo
+    echo "## Commits"
+    echo
+    echo "$commits"
+  } > "$diary_file"
+
+  message "Commit diary generated successfully: $diary_file"
+}
+
+# Main script
+if [ "$1" == "generate" ]; then
+  generate_commit_diary
+else
+  warning "Invalid command. Usage: commit-diary generate"
+  exit 1
+fi
