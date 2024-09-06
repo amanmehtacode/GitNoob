@@ -43,13 +43,13 @@ func main() {
 
 func lazyPush(cmd *cobra.Command, args []string) {
 	if !hasUnstagedChanges() {
-		fmt.Println("No changes to commit. You're all caught up! 🎉")
+		fmt.Println(green("✓ No changes to commit. You're all caught up! 🎉"))
 		return
 	}
 
 	if pullBeforePush {
-		logVerbose("Pulling latest changes from the remote branch...")
-		if err := runCommand("git", "pull", "origin", currentBranch()); err != nil {
+		fmt.Println(yellow("→ Pulling latest changes..."))
+		if err := runCommand("git", "pull", "--rebase", "origin", currentBranch()); err != nil {
 			logError("Merge conflict or error occurred during pull. Please resolve manually", err)
 			os.Exit(1)
 		}
@@ -57,34 +57,42 @@ func lazyPush(cmd *cobra.Command, args []string) {
 
 	commitMessage := getCommitMessage()
 
-	logVerbose("Staging changes...")
-	if err := runCommand("git", "add", "."); err != nil {
-		logError("Error staging changes", err)
-		return
-	}
-
-	logVerbose("Committing changes...")
-	commitOutput, err := runCommandWithOutput("git", "commit", "-m", commitMessage)
+	fmt.Println(yellow("→ Staging and committing changes..."))
+	commitOutput, err := runCommandWithOutput("git", "commit", "-am", commitMessage)
 	if err != nil {
 		logError("Error committing changes", err)
 		return
 	}
-	fmt.Println(commitOutput)
+	printFormattedOutput(commitOutput)
 
-	logVerbose("Pushing changes to the remote branch...")
+	fmt.Println(yellow("→ Pushing changes to remote..."))
 	pushOutput, err := runCommandWithOutput("git", "push", "origin", currentBranch())
 	if err != nil {
 		logError("Failed to push changes", err)
 		return
 	}
-	fmt.Println(pushOutput)
+	printFormattedOutput(pushOutput)
 
-	fmt.Println("Changes have been committed and pushed successfully.")
+	fmt.Println(green("✓ Changes have been committed and pushed successfully! 🚀"))
+}
+
+func printFormattedOutput(output string) {
+	lines := strings.Split(strings.TrimSpace(output), "\n")
+	for _, line := range lines {
+		if strings.HasPrefix(line, "[") {
+			fmt.Println(green(line))
+		} else if strings.Contains(line, ":|") {
+			parts := strings.Split(line, ":|")
+			fmt.Printf("%s %s\n", yellow(parts[0]+":"), parts[1])
+		} else {
+			fmt.Println(line)
+		}
+	}
 }
 
 func getCommitMessage() string {
-	fmt.Print("Enter commit message (leave empty for default): ")
 	reader := bufio.NewReader(os.Stdin)
+	fmt.Print(yellow("Enter commit message (leave empty for default): "))
 	commitMessage, _ := reader.ReadString('\n')
 	commitMessage = strings.TrimSpace(commitMessage)
 
