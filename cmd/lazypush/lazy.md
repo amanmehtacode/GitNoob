@@ -8,6 +8,9 @@ Lazypush is a command-line tool designed to simplify the process of adding, comm
 - **Pull Before Push**: Optionally pull the latest changes from the remote branch before pushing.
 - **Verbose Mode**: Enable detailed output for each operation.
 - **Custom Commit Messages**: Enter a custom commit message or use a default message.
+- **Conflict Resolution**: Attempts to resolve conflicts by pulling and rebasing before pushing again.
+- **Colorized Output**: Uses color-coded output for better readability.
+- **Progress Spinner**: Displays a spinner during long-running operations.
 
 ## Installation
 
@@ -20,7 +23,9 @@ Lazypush is a command-line tool designed to simplify the process of adding, comm
 2. **Install Dependencies**:
    Make sure you have Go installed. Then, run:
    ```bash
-   go get ./...
+   go get github.com/briandowns/spinner
+   go get github.com/fatih/color
+   go get github.com/spf13/cobra
    ```
 
 3. **Build the Application**:
@@ -31,11 +36,6 @@ Lazypush is a command-line tool designed to simplify the process of adding, comm
 
 ## Usage
 
-### Command Line Options
+### Basic Command
 
-- `-p`, `--pull`: Pull the latest changes from the remote branch before pushing.
-- `-v`, `--verbose`: Enable verbose output for detailed logging.
-
-### Example
-
-To use `lazypush`, run the following command in your terminal:
+To use `lazypush`, run the following command in your Git repository:
