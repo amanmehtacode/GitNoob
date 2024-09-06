@@ -53,7 +53,7 @@ func lazyPush(cmd *cobra.Command, args []string) {
 		}
 	}
 
-	commitMessage := getCommitMessage()
+	commitMessage := fmt.Sprintf("Auto commit on %s", time.Now().Format(time.RFC1123))
 
 	logVerbose("Staging changes...")
 	if err := runCommand("git", "add", "."); err != nil {
@@ -66,6 +66,10 @@ func lazyPush(cmd *cobra.Command, args []string) {
 		logError("Error committing changes", err)
 		return
 	}
+
+	// Capture commit details
+	commitDetails := fmt.Sprintf("[main %s] %s\n", getLastCommitHash(), commitMessage)
+	fmt.Println(commitDetails)
 
 	logVerbose("Pushing changes to the remote branch...")
 	if err := pushChanges(); err != nil {
@@ -158,4 +162,13 @@ func startSpinner(message string) {
 
 func stopSpinner() {
 	s.Stop()
+}
+
+func getLastCommitHash() string {
+	output, err := exec.Command("git", "rev-parse", "HEAD").Output()
+	if err != nil {
+		logError("Error getting last commit hash", err)
+		os.Exit(1)
+	}
+	return strings.TrimSpace(string(output))
 }
