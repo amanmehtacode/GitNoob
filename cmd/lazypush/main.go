@@ -55,7 +55,7 @@ func lazyPush(cmd *cobra.Command, args []string) {
 		}
 	}
 
-	commitMessage := fmt.Sprintf("Auto commit on %s", time.Now().Format(time.RFC1123))
+	commitMessage := getCommitMessage()
 
 	logVerbose("Staging changes...")
 	if err := runCommand("git", "add", "."); err != nil {
@@ -64,23 +64,22 @@ func lazyPush(cmd *cobra.Command, args []string) {
 	}
 
 	logVerbose("Committing changes...")
-	if err := runCommand("git", "commit", "-m", commitMessage); err != nil {
+	commitOutput, err := runCommandWithOutput("git", "commit", "-m", commitMessage)
+	if err != nil {
 		logError("Error committing changes", err)
 		return
 	}
-
-	// Capture commit details
-	commitDetails := fmt.Sprintf("[main %s] %s\n", getLastCommitHash(), commitMessage)
-	fmt.Println(commitDetails)
+	fmt.Println(commitOutput)
 
 	logVerbose("Pushing changes to the remote branch...")
-	if err := pushChanges(); err != nil {
+	pushOutput, err := runCommandWithOutput("git", "push", "origin", currentBranch())
+	if err != nil {
 		logError("Failed to push changes", err)
 		return
 	}
+	fmt.Println(pushOutput)
 
-	fmt.Printf("%s Changes have been committed and pushed successfully!\n", green("✓"))
-	fmt.Printf("%s You're on fire! Keep up the great work! 🔥\n", yellow("→"))
+	fmt.Println("Changes have been committed and pushed successfully.")
 }
 
 func getCommitMessage() string {
@@ -90,10 +89,16 @@ func getCommitMessage() string {
 	commitMessage = strings.TrimSpace(commitMessage)
 
 	if commitMessage == "" {
-		commitMessage = fmt.Sprintf("Auto commit on %s - Lazy but productive! 😎", time.Now().Format(time.RFC1123))
+		commitMessage = fmt.Sprintf("Auto commit on %s", time.Now().Format(time.RFC1123))
 	}
 
 	return commitMessage
+}
+
+func runCommandWithOutput(name string, args ...string) (string, error) {
+	cmd := exec.Command(name, args...)
+	output, err := cmd.CombinedOutput()
+	return string(output), err
 }
 
 func pushChanges() error {
