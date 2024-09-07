@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"log"
 	"os"
 	"os/exec"
 	"strings"
@@ -44,8 +45,7 @@ func main() {
 	rootCmd.Flags().BoolVarP(&cfg.Interactive, "interactive", "i", true, "Run in interactive mode")
 
 	if err := rootCmd.Execute(); err != nil {
-		logError("Failed to execute command", err)
-		os.Exit(1)
+		log.Fatalf("Failed to execute command: %v", err)
 	}
 }
 
@@ -190,11 +190,7 @@ func confirmPush() bool {
 
 // logError logs an error message
 func logError(message string, err error) {
-	fmt.Printf("%s %s", red("✗"), message)
-	if err != nil {
-		fmt.Printf(": %v", err)
-	}
-	fmt.Println()
+	log.Printf("%s %s: %v", red("✗"), message, err)
 }
 
 // startSpinner starts a spinner with a given message
