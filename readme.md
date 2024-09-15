@@ -1,138 +1,221 @@
+# GitNoob
 
-# LazyRepo
+GitNoob is a collection of command-line tools designed to simplify and automate various Git and GitHub operations. It includes the following tools:
 
-LazyRepo is a powerful command-line tool written in Go that automates the process of setting up a new Git repository both locally and on GitHub. It streamlines the process of initializing a local repository, creating a remote repository on GitHub, and pushing the initial commit, saving you time and effort.
-
-## Table of Contents
-
-- [Features](#features)
-- [Prerequisites](#prerequisites)
-- [Installation](#installation)
-- [Usage](#usage)
-- [Project Structure](#project-structure)
-- [Configuration](#configuration)
-- [Example](#example)
-- [License](#license)
-- [Contributing](#contributing)
-- [Acknowledgements](#acknowledgements)
-
-## Features
-
-- **Local Repository Initialization**: LazyRepo initializes a local Git repository in a directory of your choice.
-- **GitHub Repository Creation**: It creates a remote repository on GitHub using your personal access token.
-- **Initial Commit Push**: LazyRepo adds the remote repository and pushes the initial commit, which includes a `README.md` file.
-
-## Prerequisites
-
-Before you begin, ensure you have the following installed:
-
-- Go (1.16 or later)
-- Git
-- A GitHub account and a personal access token with repository creation permissions.
+- **autobranch**: Automatically creates and manages Git branches based on commit messages.
+- **autocommit**: Automatically commits changes with a generated message.
+- **automerge**: Automatically merges all branches into the main branch.
+- **deleterepo**: Deletes a GitHub repository.
+- **lazypush**: Simplifies the process of adding, committing, and pushing changes to a Git repository.
+- **lazyrepo**: Sets up a new Git repository with a predefined structure and publishes it to GitHub.
+- **newrepo**: Creates a new Git repository and publishes it to GitHub.
 
 ## Installation
-
-Follow these steps to install LazyRepo:
 
 1. Clone the repository:
 
     ```sh
-    git clone https://github.com/yourusername/lazyrepo.git
-    cd lazyrepo
+    git clone https://github.com/yourusername/GitNoob.git
+    cd GitNoob
     ```
 
-2. Build the project:
+2. Build the tools:
 
     ```sh
+    go build -o autobranch ./cmd/autobranch
+    go build -o autocommit ./cmd/autocommit
+    go build -o automerge ./cmd/automerge
+    go build -o deleterepo ./cmd/deleterepo
+    go build -o lazypush ./cmd/lazypush
     go build -o lazyrepo ./cmd/lazyrepo
+    go build -o newrepo ./cmd/newrepo
     ```
 
-3. Move the binary to a directory in your PATH:
+3. Move the binaries to a directory in your PATH:
 
     ```sh
+    mv autobranch /usr/local/bin/
+    mv autocommit /usr/local/bin/
+    mv automerge /usr/local/bin/
+    mv deleterepo /usr/local/bin/
+    mv lazypush /usr/local/bin/
     mv lazyrepo /usr/local/bin/
+    mv newrepo /usr/local/bin/
     ```
 
 ## Usage
 
-Here's how to use LazyRepo:
+### autobranch
 
-1. Set the `GITHUB_TOKEN` environment variable with your GitHub personal access token:
-
-    ```sh
-    export GITHUB_TOKEN=your_github_token
-    ```
-
-2. Optionally, set the `GITHUB_USERNAME` environment variable with your GitHub username:
-
-    ```sh
-    export GITHUB_USERNAME=your_github_username
-    ```
-
-3. Run the `lazyrepo` command with the desired repository name:
-
-    ```sh
-    lazyrepo setup-repo <repository-name>
-    ```
-
-    Example:
-
-    ```sh
-    lazyrepo setup-repo my-new-repo
-    ```
-
-4. Use the `-v` or `--verbose` flag for verbose output:
-
-    ```sh
-    lazyrepo setup-repo my-new-repo -v
-    ```
-
-## Project Structure
-
-The project has the following structure:
-
-```
-lazyrepo/
-├── cmd/
-│   └── lazyrepo/
-│       └── main.go
-├── go.mod
-├── go.sum
-└── README.md
-```
-
-- `cmd/lazyrepo/main.go`: The main entry point for the LazyRepo command-line tool.
-- `go.mod`: The Go module file, which includes the project dependencies.
-- `go.sum`: The Go checksum file, which ensures the integrity of the project dependencies.
-- `README.md`: This file, which provides documentation for the project.
-
-## Configuration
-
-LazyRepo uses the following environment variables:
-
-- `GITHUB_TOKEN`: Your GitHub personal access token. This is required to create a new repository on GitHub.
-- `GITHUB_USERNAME`: Your GitHub username. This is optional but recommended for a smoother experience.
-
-## Example
-
-Here's an example of how to use LazyRepo:
+Automatically creates and manages Git branches based on commit messages.
 
 ```sh
-export GITHUB_TOKEN=your_github_token
-export GITHUB_USERNAME=your_github_username
-lazyrepo setup-repo my-new-repo -v
+autobranch
 ```
+
+### autocommit
+
+Automatically commits changes with a generated message.
+
+```sh
+autocommit
+```
+
+### automerge
+
+Automatically merges all branches into the main branch.
+
+```sh
+automerge
+```
+
+### deleterepo
+
+Deletes a GitHub repository.
+
+```sh
+deleterepo --name <repository-name>
+```
+
+### lazypush
+
+Simplifies the process of adding, committing, and pushing changes to a Git repository.
+
+```sh
+lazypush
+```
+
+### lazyrepo
+
+Sets up a new Git repository with a predefined structure and publishes it to GitHub.
+
+```sh
+lazyrepo --name <repository-name>
+```
+
+### newrepo
+
+Creates a new Git repository and publishes it to GitHub.
+
+```sh
+newrepo --name <repository-name>
+```
+
+## Contributing
+
+Contributions are welcome! Please open an issue or submit a pull request.
 
 ## License
 
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
 
+## Acknowledgements
+
+- [Cobra](https://github.com/spf13/cobra) for CLI framework.
+- [Viper](https://github.com/spf13/viper) for configuration management.
+- [go-git](https://github.com/go-git/go-git) for Git library.
+- [spinner](https://github.com/briandowns/spinner) for terminal spinner.
+- [color](https://github.com/fatih/color) for colorized output.
+more detailed and read the file names to make up the commands and fucntionality that i am gonna be adding later
+# GitNoob
+
+GitNoob is a comprehensive suite of command-line tools designed to simplify and automate various Git and GitHub operations. It's built with Go and leverages several powerful libraries to provide a streamlined and efficient workflow for developers.
+
+## Tools
+
+The GitNoob suite includes the following tools:
+
+### autobranch
+
+The `autobranch` tool automatically creates and manages Git branches based on commit messages. It's designed to streamline the process of branching in Git, making it easier to manage multiple lines of development.
+
+Command: `autobranch`
+
+### autocommit
+
+The `autocommit` tool automatically stages and commits changes with a generated message. This is useful for quickly committing changes without having to manually stage files or write a commit message.
+
+Command: `autocommit`
+
+### automerge
+
+The `automerge` tool automatically merges all branches into the main branch. This can be useful for consolidating changes from multiple branches.
+
+Command: `automerge`
+
+### deleterepo
+
+The `deleterepo` tool deletes a GitHub repository. This can be useful for cleaning up old or unnecessary repositories.
+
+Command: `deleterepo --name <repository-name>`
+
+### lazypush
+
+The `lazypush` tool simplifies the process of adding, committing, and pushing changes to a Git repository. It combines these three operations into a single command, making it easier to quickly save and push changes.
+
+Command: `lazypush`
+
+### lazyrepo
+
+The `lazyrepo` tool sets up a new Git repository with a predefined structure and publishes it to GitHub. This can be useful for quickly setting up new projects.
+
+Command: `lazyrepo --name <repository-name>`
+
+### newrepo
+
+The `newrepo` tool creates a new Git repository and publishes it to GitHub. This can be useful for quickly creating new repositories without having to manually create them on GitHub.
+
+Command: `newrepo --name <repository-name>`
+
+## Installation
+
+1. Clone the repository:
+
+    ```sh
+    git clone https://github.com/yourusername/GitNoob.git
+    cd GitNoob
+    ```
+
+2. Build the tools:
+
+    ```sh
+    go build -o autobranch ./cmd/autobranch/main.go
+    go build -o autocommit ./cmd/autocommit/main.go
+    go build -o automerge ./cmd/automerge/main.go
+    go build -o deleterepo ./cmd/deleterepo/main.go
+    go build -o lazypush ./cmd/lazypush/main.go
+    go build -o lazyrepo ./cmd/lazyrepo/main.go
+    go build -o newrepo ./cmd/newrepo/main.go
+    ```
+
+3. Move the binaries to a directory in your PATH:
+
+    ```sh
+    mv autobranch /usr/local/bin/
+    mv autocommit /usr/local/bin/
+    mv automerge /usr/local/bin/
+    mv deleterepo /usr/local/bin/
+    mv lazypush /usr/local/bin/
+    mv lazyrepo /usr/local/bin/
+    mv newrepo /usr/local/bin/
+    ```
+
+## Usage
+
+Each tool in the GitNoob suite can be used as a standalone command-line tool. For detailed usage instructions, refer to the individual tool sections above.
+
 ## Contributing
 
-Contributions are welcome! If you have a feature request, bug report, or want to improve the documentation, please open an issue or submit a pull request.
+Contributions are welcome! Please open an issue or submit a pull request if you have a feature request, bug report, or want to improve the documentation or code.
+
+## License
+
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
 
 ## Acknowledgements
 
 - [Cobra](https://github.com/spf13/cobra) for providing a powerful library for creating command-line interfaces.
 - [Viper](https://github.com/spf13/viper) for handling configuration with ease.
 - [go-git](https://github.com/go-git/go-git) for offering a highly extensible Git implementation in pure Go.
+- [spinner](https://github.com/briandowns/spinner) for terminal spinner.
+- [color](https://github.com/fatih/color) for colorized output.
