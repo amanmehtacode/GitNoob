@@ -1,8 +1,9 @@
 package main
 
 import (
-	"bufio"
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
@@ -10,6 +11,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/AlecAivazis/survey/v2"
 	"github.com/briandowns/spinner"
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"
@@ -17,7 +19,6 @@ import (
 
 // Configuration structure to hold command-line flags
 type Config struct {
-	RepoName    string
 	VerboseMode bool
 	Interactive bool
 }
@@ -40,8 +41,7 @@ func main() {
 	}
 
 	// Command-line flags
-	rootCmd.Flags().StringVarP(&cfg.RepoName, "name", "n", "", "Name of the repository to delete")
-	rootCmd.Flags().BoolVarP(&cfg.VerboseMode, "verbose", "v", true, "Enable verbose output")
+	rootCmd.Flags().BoolVarP(&cfg.VerboseMode, "verbose", "v", false, "Enable verbose output")
 	rootCmd.Flags().BoolVarP(&cfg.Interactive, "interactive", "i", true, "Run in interactive mode")
 
 	if err := rootCmd.Execute(); err != nil {
@@ -50,31 +50,65 @@ func main() {
 }
 
 func deleteRepo(cmd *cobra.Command, args []string) {
-	if cfg.Interactive && cfg.RepoName == "" {
-		cfg.RepoName = promptForInput("Enter repository name to delete: ")
-	}
-
-	if cfg.RepoName == "" {
-		log.Fatalf(red("Repository name is required"))
-	}
-
 	username, token, err := getGitHubCredentials()
 	if err != nil {
 		log.Fatalf(red("Failed to get GitHub credentials: %v"), err)
 	}
 
-	if err := deleteGitHubRepo(cfg.RepoName, username, token); err != nil {
-		log.Fatalf(red("Failed to delete GitHub repository: %v"), err)
+	repoNames, err := listRepositories(username, token)
+	if err != nil {
+		log.Fatalf(red("Failed to list repositories: %v"), err)
 	}
 
-	fmt.Println(green("✓ GitHub repository deleted successfully! 🗑️"))
-}
+	if len(repoNames) == 0 {
+		log.Fatalf(red("No repositories found for user %s"), username)
+	}
 
-func promptForInput(prompt string) string {
-	reader := bufio.NewReader(os.Stdin)
-	fmt.Print(yellow(prompt))
-	input, _ := reader.ReadString('\n')
-	return strings.TrimSpace(input)
+	selectedRepo := ""
+	if cfg.Interactive {
+		if err := survey.AskOne(&survey.Select{
+			Message: "Select a repository to delete:",
+			Options: repoNames,
+		}, &selectedRepo); err != nil {
+			log.Fatalf(red("Failed to select repository: %v"), err)
+		}
+	} else {
+		selectedRepo = args[0] // Use the first argument if not interactive
+	}
+
+	localRepos, err := listLocalRepositories()
+	if err != nil {
+		log.Fatalf(red("Failed to list local repositories: %v"), err)
+	}
+
+	if len(localRepos) == 0 {
+		log.Fatalf(red("No local repositories found."))
+	}
+
+	selectedLocalRepo := ""
+	if err := survey.AskOne(&survey.Select{
+		Message: "Select a local repository to delete:",
+		Options: localRepos,
+	}, &selectedLocalRepo); err != nil {
+		log.Fatalf(red("Failed to select local repository: %v"), err)
+	}
+
+	if confirmDeletion(selectedLocalRepo) {
+		if err := deleteLocalRepo(selectedLocalRepo); err != nil {
+			log.Fatalf(red("Failed to delete local repository: %v"), err)
+		}
+
+		// Ask if the user wants to delete the GitHub repo
+		if confirmDeletion("the GitHub repository '" + selectedLocalRepo + "'") {
+			if err := deleteGitHubRepo(selectedLocalRepo, username, token); err != nil {
+				log.Fatalf(red("Failed to delete GitHub repository: %v"), err)
+			}
+		} else {
+			fmt.Println(yellow("Deletion from GitHub cancelled."))
+		}
+	} else {
+		fmt.Println(yellow("Local repository deletion cancelled."))
+	}
 }
 
 func getGitHubCredentials() (string, string, error) {
@@ -97,6 +131,73 @@ func getGitHubCredentials() (string, string, error) {
 	}
 
 	return username, token, nil
+}
+
+func listRepositories(username, token string) ([]string, error) {
+	url := fmt.Sprintf("https://api.github.com/users/%s/repos", username)
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create request: %w", err)
+	}
+
+	req.SetBasicAuth(username, token)
+	req.Header.Set("Accept", "application/vnd.github.v3+json")
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("failed to list repositories: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("failed to list repositories: %s", resp.Status)
+	}
+
+	var repos []struct {
+		Name string `json:"name"`
+	}
+	if err := json.NewDecoder(resp.Body).Decode(&repos); err != nil {
+		return nil, fmt.Errorf("failed to decode response: %w", err)
+	}
+
+	var repoNames []string
+	for _, repo := range repos {
+		repoNames = append(repoNames, repo.Name)
+	}
+
+	return repoNames, nil
+}
+
+func confirmDeletion(repoName string) bool {
+	var confirm string
+	fmt.Print(yellow("Are you sure you want to delete the repository '" + repoName + "'? This action cannot be undone. (y/N): "))
+	fmt.Scanln(&confirm)
+	return strings.ToLower(confirm) == "y"
+}
+
+func deleteLocalRepo(repoName string) error {
+	localPath := fmt.Sprintf("./%s", repoName) // Adjust the path as necessary
+	if err := os.RemoveAll(localPath); err != nil {
+		return fmt.Errorf("failed to delete local repository: %w", err)
+	}
+	fmt.Println(green("✓ Local repository deleted successfully!"))
+	return nil
+}
+
+func listLocalRepositories() ([]string, error) {
+	files, err := ioutil.ReadDir(".")
+	if err != nil {
+		return nil, fmt.Errorf("failed to read directory: %w", err)
+	}
+
+	var repos []string
+	for _, file := range files {
+		if file.IsDir() {
+			repos = append(repos, file.Name())
+		}
+	}
+	return repos, nil
 }
 
 func deleteGitHubRepo(repoName, username, token string) error {

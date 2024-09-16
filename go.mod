@@ -16,3 +16,10 @@ require (
 	golang.org/x/sys v0.25.0 // indirect; indirect // @latest
 	golang.org/x/term v0.24.0 // indirect; indirect // @latest
 )
+
+require (
+	github.com/AlecAivazis/survey/v2 v2.3.7 // indirect
+	github.com/kballard/go-shellquote v0.0.0-20180428030007-95032a82bc51 // indirect
+	github.com/mgutz/ansi v0.0.0-20170206155736-9520e82c474b // indirect
+	golang.org/x/text v0.4.0 // indirect
+)

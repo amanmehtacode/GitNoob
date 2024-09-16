@@ -15,7 +15,7 @@ GitNoob is a collection of command-line tools designed to simplify and automate 
 1. Clone the repository:
 
     ```sh
-    git clone https://github.com/yourusername/GitNoob.git
+    git clone https://github.com/amanmehtacode/GitNoob.git
     cd GitNoob
     ```
 
@@ -172,7 +172,7 @@ Command: `newrepo --name <repository-name>`
 1. Clone the repository:
 
     ```sh
-    git clone https://github.com/yourusername/GitNoob.git
+    git clone https://github.com/amanmehtacode/GitNoob.git
     cd GitNoob
     ```
 

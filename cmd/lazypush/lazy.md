@@ -16,7 +16,7 @@ Lazypush is a command-line tool designed to simplify the process of adding, comm
 
 1. **Clone the Repository**:
    ```bash
-   git clone https://github.com/yourusername/lazypush.git
+   git clone https://github.com/amanmehtacode/lazypush.git
    cd lazypush
    ```
 
